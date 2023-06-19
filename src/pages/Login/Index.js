@@ -1,0 +1,84 @@
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import React from 'react'
+import { toast } from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom'
+import * as yup from 'yup';
+import {signInWithEmailAndPassword,signInWithPopup,GoogleAuthProvider} from 'firebase/auth';
+import {auth} from '../../firebase/config';
+
+
+const Login = () => {
+const navigate  = useNavigate();
+
+  const validationSchema = yup.object({
+    email:yup.string().email().required("email is required"),
+    password:yup.string().min(6).required("password is required"),
+  })
+
+
+  const signupwithGoogle = async()=>{
+   try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+      navigate("/");
+   } catch (error) {
+    toast.error(error.message);
+   }
+  }
+
+  const initalvalues={
+    email:"",
+    password:""
+  }
+
+  const handlesubmit=async(e,{resetForm})=>{
+       try {
+        await signInWithEmailAndPassword(auth,e.email,e.password);
+          toast.success("login success");
+          navigate("/");
+       } catch (error) {
+        toast.error( error.message);
+       }
+  }
+
+
+  return (
+    <>
+    
+    <section className="text-gray-600 body-font">
+  <div className="container px-5 py-24 mx-auto flex flex-wrap justify-center items-center">
+ <Formik initialValues={initalvalues} validationSchema={validationSchema} onSubmit={handlesubmit}>
+ <Form className="lg:w-[50%] md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col justify-center w-full mt-10 md:mt-0">
+      <h2 className="text-gray-900 text-lg font-medium title-font mb-5">Sign In</h2>
+     
+      
+      <div className="relative mb-4">
+        <label htmlFor="email" className="leading-7 text-sm text-gray-600">Email</label>
+        <Field type="email" id="email" name="email" className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+        <p className="text-red-600">
+          <ErrorMessage name='email' />
+        </p>
+      </div>
+      <div className="relative mb-4">
+        <label className="leading-7 text-sm text-gray-600">Password </label>
+        <Field type="text"  name="password" className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+        <p className="text-red-600">
+          <ErrorMessage name='password' />
+        </p>
+      </div>
+      <button type='submit' className="text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Submit </button>
+     <Link to={'/register'} className='text-center text-xl '>Register &rarr;</Link>
+     <div className="py-5 px-10">
+     <button onClick={signupwithGoogle} className="text-white bg-pink-500 border-0 py-2 px-8 focus:outline-none hover:bg-pink-600 rounded text-lg">Sign in with google </button>
+     </div>
+    </Form>
+ </Formik>
+    
+  </div>
+</section>
+
+    </>
+  )
+}
+
+export default Login
